@@ -26,6 +26,13 @@ function tc_init() {
 	$('body').append( $(str) );
 	$('#myMenu').hide();
 	
+	$( document ).tooltip( {
+		position: {
+			my: "center bottom-10",
+			at: "center top"
+		}		
+	} );
+	
 }
 
 // c_id - 容器id值，无 ‘#’
@@ -47,6 +54,7 @@ function gen_tc( c_id, site_index, occ_info_index ) {
 	for(var i=0; i<24; i++ ) {
 		var mid = $('<li class="tc_h tc_h_green"></li>');
 		mid.attr( 'time', i );
+		mid.attr( 'title', i+':00-'+(i+1)+':00' );
 		if( i==0 )
 			mid.addClass( 'tc_h_f' );
 		if( i==23 )
