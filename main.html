@@ -6,8 +6,9 @@
 		<link rel='stylesheet' type='text/css' href='css/style.css'>
 		<script src='./js-lib/jquery-2.1.1.min.js'></script>
 		<script src='./js-lib/jquery-ui.min.js'></script>
+		<script src='./js-lib/jquery.contextmenu.r2.js'></script>
 		<script src='./my-js/time_choose.js'></script>
-		
+
 		<style type='text/css'>
 			.tc_t{width:4.16%;text-align:center;font-size:20%;font-style:italic;display:inline-table;margin-right:20.8%}
 			.tc_t_pre_end{margin-right:16.64%}
@@ -34,9 +35,34 @@
 	<body>
 		<div id='tc_1' style='width:80%;height:120px;margin:120px 0px 0px 80px'></div>
 		
+		<div class='contextMenu' id='myMenu'>
+			<ul class='menu_1'>
+			  <li id='item_1'>&nbsp;&nbsp;&nbsp;申请</li>
+			  <li id='item_2'>&nbsp;&nbsp;&nbsp;取消</li>
+			</ul>
+	   </div>
+   
 		<script type="text/javascript">
+
 			$( function() {
 				tc_init( 'tc_1' );
+				
+				$('#tc_1').contextMenu( 'myMenu', {
+									  
+					itemHoverStyle: {
+						backgroundColor: '#AAB2BD',
+						border: 'none'
+					},
+					  
+					 bindings: {
+						'item_1': function(t) {
+							alert('Trigger was '+t.id+'\nAction was item_1');
+						},
+						'item_2': function(t) {}
+					}
+					
+				} );
+	
 			} );
 		</script>
 		

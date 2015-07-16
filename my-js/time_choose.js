@@ -40,6 +40,10 @@ function tc_init( c_id ) {
 		
 	var lis = tc_b1.children('li.tc_h_green');
 	lis.click( function() {
+		
+		$('#jqContextMenu').hide();
+		$('#jqContextMenu_shadow').hide();
+		
 		var tar = $(this);
 		var tar_p = tar.parent('ul');
 		var clicked_li = tar_p.children( 'li.clicked' );
@@ -97,6 +101,10 @@ function tc_init( c_id ) {
 	} );
 	
 	can.click( function() {
+		
+		$('#jqContextMenu').hide();
+		$('#jqContextMenu_shadow').hide();
+		
 		var tar = $(this).children('ul');
 		tar.children('.choose').hide();
 		choosed.length = 0;
