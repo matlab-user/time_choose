@@ -4,18 +4,34 @@
 			. campus
 			. room
 			. close_t -- [ [st1, et1], [st2, et2].. ]
-			. occ_info[]. date -- year/mon/day
-						. state -- 0:empty; 1:used;
-						. t -- [st, et]
+			. occ_info[]. date -- year/mon/day							// 每个occ_info[]代表一天
+						. usage_t -- [[st1, et1],[st2, et2],...]     	// 占用时间
+						. choosed
 */
 var site = new Array();
 site[0] = new Object();
 site[0].close_t = [[0,8],[22,23]];
+site[0].occ_info = [];
+site[0].occ_info[0] = new Object();
+site[0].occ_info[0].data = 0;
+site[0].occ_info[0].usage_t = [[9, 12],[15,15],[17,21]];
+site[0].occ_info[0].choosed = [];
 
-var choosed = new Array();
+function tc_init() {
+	var str = "<div class='contextMenu' id='myMenu'><ul class='menu_1'>\
+						<li id='item_1'>&nbsp;&nbsp;&nbsp;申请</li> \
+						<li id='item_2'>&nbsp;&nbsp;&nbsp;取消</li> \
+					</ul></div>";
+	
+	$('body').append( $(str) );
+	$('#myMenu').hide();
+	
+}
 
 // c_id - 容器id值，无 ‘#’
-function tc_init( c_id ) {
+// site_index 
+// occ_info_index
+function gen_tc( c_id, site_index, occ_info_index ) {
 	var can = $( '#'+c_id );
 	can.append( $('<p class="tc_t">0</p>') );
 	can.append( $('<p class="tc_t">6</p>') );
@@ -24,10 +40,12 @@ function tc_init( c_id ) {
 	can.append( $('<p class="tc_t tc_t_end">23</p>') );
 	
 	var tc_b1 = $('<ul class="tc_b1"></ul>');
+	tc_b1.attr( 'site_index', site_index );	
+	tc_b1.attr( 'occ_info_index', occ_info_index );
 	can.append( tc_b1 );
 	
 	for(var i=0; i<24; i++ ) {
-		var mid = $('<li class="tc_h mouse_response tc_h_green"></li>');
+		var mid = $('<li class="tc_h tc_h_green"></li>');
 		mid.attr( 'time', i );
 		if( i==0 )
 			mid.addClass( 'tc_h_f' );
@@ -36,7 +54,7 @@ function tc_init( c_id ) {
 		tc_b1.append( mid );
 	}
 	
-	set_tc( c_id, 0 );
+	set_tc( c_id, site_index, occ_info_index );		// must be here
 		
 	var lis = tc_b1.children('li.tc_h_green');
 	lis.click( function() {
@@ -46,6 +64,11 @@ function tc_init( c_id ) {
 		
 		var tar = $(this);
 		var tar_p = tar.parent('ul');
+		
+		var s_ind = tar_p.attr( 'site_index' ) * 1;
+		var occ_ind = tar_p.attr( 'occ_info_index' ) * 1;
+		var choosed = site[s_ind].occ_info[occ_ind].choosed;
+		
 		var clicked_li = tar_p.children( 'li.clicked' );
 	
 		var choose = tar.parent('ul').children('div.choose');
@@ -107,18 +130,50 @@ function tc_init( c_id ) {
 		
 		var tar = $(this).children('ul');
 		tar.children('.choose').hide();
-		choosed.length = 0;
 		tar.children('li.clicked').removeClass( 'clicked' );
 		return false;
 	} );
+	
+	//  添加右键菜单
+	$('#'+c_id).contextMenu( 'myMenu', {
+						  
+		itemHoverStyle: {
+			backgroundColor: '#AAB2BD',
+			border: 'none'
+		},
+		  
+		 bindings: {
+			'item_1': function(t) {
+				//alert('Trigger was '+t.id+'\nAction was item_1');
+				var trigger = $('#'+t.id);
+				var choose_div = trigger.find('div.choose');
+				if( choose_div.length<=0 || choose_div.is(':hidden') )
+					return false;
+				
+				var s_ind = trigger.find('ul.tc_b1').attr( 'site_index' ) * 1;
+				var occ_ind = trigger.find('ul.tc_b1').attr( 'occ_info_index' ) * 1;
+				if( check( s_ind, occ_ind ) ) {		// 冲突
+					alert( '时间选择冲突，请重新选择！' );
+					
+				}
+				else {
+					alert( '已申请！' );
+				}
+			},
+			
+			'item_2': function(t) {}
+		}
+		
+	} );
 }
 
-function set_tc( c_id, i ) {
+function set_tc( c_id, site_index, occ_info_index ) {
 	
 	var target = $( '#'+c_id );
 	var lis = target.children('ul').children('li');
 	
-	$.each( site[i].close_t, function(k,v) {
+	// 设置关门时间
+	$.each( site[site_index].close_t, function(k,v) {
 		lis.each( function(k2,v2) {
 			var jv2 = $(v2);
 			var hour = jv2.attr('time');
@@ -126,8 +181,59 @@ function set_tc( c_id, i ) {
 				jv2.removeClass( 'tc_h_green' );
 				jv2.addClass( 'tc_h_grey' );
 			}
-		} );
-		
+		} );	
 	} );
+	
+	// 设置已占用时间
+	$.each( site[site_index].occ_info[occ_info_index].usage_t, function(k,v) {
+		for(var i=v[0]; i<=v[1]; i++ ) {
+			var jv = lis.nextAll('li[time="'+i+'"]');
+			jv.removeClass( 'tc_h_green' );
+			jv.addClass( 'tc_h_red' );
+		}	
+	} );
+}
+
+// 判断选中的时间段是否有冲突
+// 返回 true - 冲突 
+function check( site_index, occ_info_index ) {
+	
+	var choosed = site[site_index].occ_info[occ_info_index].choosed;
+	var sig = false;
+	
+	// c1 <= c2
+	if( choosed[0]>choosed[1] ) {
+		var c1 = choosed[1];
+		var c2 = choosed[0];
+	}
+	else {
+		var c1 = choosed[0];
+		var c2 = choosed[1];
+	}
+		
+	$.each( site[site_index].occ_info[occ_info_index].usage_t, function(k,v) {
+
+		if( v[0]>=c1 && v[0]<=c2 ) {
+			sig = true;
+			return false;
+		}
+		
+		if( v[1]>=c1 && v[1]<=c2 ) {
+			sig = true;
+			return false;
+		}
+		
+		if( c1>=v[0] && c1<=v[1] ) {
+			sig = true;
+			return false;
+		}
+		
+		if( c2>=v[0] && c2<=v[1] ) {
+			sig = true;
+			return false;
+		}
+	} );
+	
+	return sig;
 	
 }

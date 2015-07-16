@@ -34,35 +34,12 @@
 	
 	<body>
 		<div id='tc_1' style='width:80%;height:120px;margin:120px 0px 0px 80px'></div>
-		
-		<div class='contextMenu' id='myMenu'>
-			<ul class='menu_1'>
-			  <li id='item_1'>&nbsp;&nbsp;&nbsp;申请</li>
-			  <li id='item_2'>&nbsp;&nbsp;&nbsp;取消</li>
-			</ul>
-	   </div>
    
 		<script type="text/javascript">
 
 			$( function() {
-				tc_init( 'tc_1' );
-				
-				$('#tc_1').contextMenu( 'myMenu', {
-									  
-					itemHoverStyle: {
-						backgroundColor: '#AAB2BD',
-						border: 'none'
-					},
-					  
-					 bindings: {
-						'item_1': function(t) {
-							alert('Trigger was '+t.id+'\nAction was item_1');
-						},
-						'item_2': function(t) {}
-					}
-					
-				} );
-	
+				tc_init();	
+				gen_tc( 'tc_1', 0, 0 );
 			} );
 		</script>
 		
